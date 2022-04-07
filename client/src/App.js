@@ -4,8 +4,28 @@ import SearchBooks from './pages/SearchBooks';
 import SavedBooks from './pages/SavedBooks';
 import Navbar from './components/Navbar';
 
+// Create Apollo provider
+import { ApolloProvider } from '@apollo/react-hooks';
+import ApolloClient from 'apollo-boost';
+
+// Connect to graphQL server using Apollo
+const client = new ApolloClient({
+  request: operation => {
+    const token = localStorage.getItem('id_token');
+
+    operation.setContext({
+      // populates the header session that will talk to apollo
+      headers: { 
+        authorization: token ? `Bearer ${token}` : ''
+      }
+    });
+  },
+ 
+  uri: '/graphql'
+}); 
 function App() {
   return (
+  <ApolloProvider client={client}> 
     <Router>
       <>
         <Navbar />
@@ -16,6 +36,7 @@ function App() {
         </Switch>
       </>
     </Router>
+  </ApolloProvider> 
   );
 }
 
