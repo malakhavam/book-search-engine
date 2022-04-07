@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
 
-import { createUser } from '../utils/API';
+// import hooks for mutatios and our mutations 
+import { useMutation } from '@apollo/react-hooks';
+import { ADD_USER } from '../utils/mutations';
+//import { createUser } from '../utils/API';
 import Auth from '../utils/auth';
 
 const SignupForm = () => {
@@ -9,6 +12,8 @@ const SignupForm = () => {
   const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
   // set state for form validation
   const [validated] = useState(false);
+  // using the apollo hook  useMutation pass the ADD_USER mutation in order to talk to graphql addUser will hold the output and error the error
+  const [addUser, { error }] = useMutation(ADD_USER);
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
 
@@ -27,18 +32,17 @@ const SignupForm = () => {
       event.stopPropagation();
     }
 
+     // use try/catch to handle errors
     try {
-      const response = await createUser(userFormData);
-
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const { token, user } = await response.json();
-      console.log(user);
-      Auth.login(token);
-    } catch (err) {
-      console.error(err);
+      // execute addUser mutation and pass in variable data from form
+      
+      const { data } = await addUser({
+        variables: { ...userFormData }
+      });
+      Auth.login(data.addUser.token);
+      console.log(data);
+    } catch (e) {
+      console.error(e);
       setShowAlert(true);
     }
 
